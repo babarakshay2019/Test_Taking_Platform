@@ -1,0 +1,60 @@
+# Python
+*.pyc
+*.pyo
+__pycache__/
+*.pyd
+*.pdb
+*.pyo
+
+# Django
+*.sqlite3
+db.sqlite3
+media/
+staticfiles/
+
+# Environment variables
+.env
+*.env
+
+# Django migrations
+*/migrations/*.py
+*/migrations/*.pyc
+!*/migrations/__init__.py
+
+# IDEs and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Virtual environments
+venv/
+ENV/
+vnev/
+.venv/
+env/
+venv.bak/
+
+# Pytest cache and logs
+.pytest_cache/
+*.log
+
+# Coverage reports
+.coverage
+*.cover
+coverage/
+htmlcov/
+
+# MacOS
+.DS_Store
+
+# Byte-compiled / optimized / DLL files
+*.pyd
+*.so
+*.dll
+
+# Other files
+*.log
+*.pot
+*.mo
+*.db
