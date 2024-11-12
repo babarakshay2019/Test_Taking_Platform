@@ -52,8 +52,8 @@ const CarouselSection = () => {
             alt="Slide 1"
             style={{
               borderRadius: 10,
-              width: "80%",
-              height: "auto",
+              width: "50%",
+              height: "60%",
               objectFit: "cover",
             }}
           />
@@ -64,7 +64,7 @@ const CarouselSection = () => {
             alt="Slide 2"
             style={{
               borderRadius: 10,
-              width: "80%",
+              width: "60%",
               height: "auto",
               objectFit: "cover",
             }}
@@ -76,7 +76,7 @@ const CarouselSection = () => {
             alt="Slide 3"
             style={{
               borderRadius: 10,
-              width: "80%",
+              width: "60%",
               height: "auto",
               objectFit: "cover",
             }}

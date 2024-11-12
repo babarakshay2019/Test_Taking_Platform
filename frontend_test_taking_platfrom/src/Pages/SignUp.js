@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Box,
   Button,
@@ -8,9 +8,11 @@ import {
   Divider,
 } from "@mui/material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
-import "react-responsive-carousel/lib/styles/carousel.min.css"; // Import carousel styles
-import CarouselSection from '../compontents/carousel'; // Import the new CarouselSection component
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css"; // Import Toastify styles
 
+import CarouselSection from '../compontents/carousel'; // Import the new CarouselSection component
+import { registerUser } from '../services/api'; // Import the signup API function
 
 const theme = createTheme({
   palette: {
@@ -64,13 +66,23 @@ const SignUpPage = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validateForm(formData);
     setErrors(validationErrors);
     if (Object.keys(validationErrors).length === 0) {
-      // Form is valid, submit data here
-      console.log("Form submitted", formData);
+      try {
+        // Call the sign-up API from the service
+        const data = await registerUser(formData);
+
+        // If signup is successful
+        toast.success("Sign up successful!", { position: "top-right" });
+        // Redirect to login page or home after success
+        // Example: navigate("/login");
+      } catch (error) {
+        // Handle error response from the API
+        toast.error(error.message || "Something went wrong. Please try again.", { position: "top-right" });
+      }
     }
   };
 
@@ -98,13 +110,10 @@ const SignUpPage = () => {
       </style>
 
       <Grid container sx={{ width: "100vw", height: "100vh" }}>
-      <Grid
-          item
-          xs={12}
-          md={6}>
-      <CarouselSection /> 
-      </Grid>
-        
+        <Grid item xs={12} md={6}>
+          <CarouselSection />
+        </Grid>
+
         <Grid
           item
           xs={12}
@@ -129,12 +138,7 @@ const SignUpPage = () => {
               borderColor: "primary.main",
             }}
           >
-            <Typography
-              variant="h4"
-              color="textPrimary"
-              align="center"
-              gutterBottom
-            >
+            <Typography variant="h4" color="textPrimary" align="center" gutterBottom>
               Create an Account
             </Typography>
             <form onSubmit={handleSubmit}>
@@ -180,7 +184,6 @@ const SignUpPage = () => {
                 size="medium"
                 sx={{ marginY: 1 }}
                 type="submit"
-                disabled={Object.keys(errors).length > 0 || !formData.username || !formData.email || !formData.password}
               >
                 Sign Up
               </Button>
@@ -188,16 +191,16 @@ const SignUpPage = () => {
             <Divider sx={{ marginY: 1 }}>or</Divider>
             <Typography variant="body2" align="center" color="textSecondary">
               Already have an account?{" "}
-              <a
-                href="/login"
-                style={{ textDecoration: "none", color: "#004d4b" }}
-              >
+              <a href="/login" style={{ textDecoration: "none", color: "#004d4b" }}>
                 Sign in
               </a>
             </Typography>
           </Box>
         </Grid>
       </Grid>
+
+      {/* Toast container for notifications */}
+      <ToastContainer />
     </ThemeProvider>
   );
 };

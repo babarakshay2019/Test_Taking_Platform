@@ -18,7 +18,7 @@ const theme = createTheme({
   },
 });
 
-const TestHistory = () => {
+const StartTest= () => {
   const navigate = useNavigate();
 
   // Sample test data with score
@@ -34,9 +34,11 @@ const TestHistory = () => {
   const incompleteTests = tests.filter(test => test.score === null);
   const completedTests = tests.filter(test => test.score !== null);
 
-  // Handle navigation to view test
-  const handleViewTest = (testId) => {
-    navigate(`/view-test/${testId}`);
+  // Handle navigation to view test or start test
+  const handleTestAction = (testId, score) => {
+    if (score === null) {
+      navigate(`/${testId}`); // Navigate to the StartTest page with the test ID
+    }
   };
 
   return (
@@ -46,7 +48,7 @@ const TestHistory = () => {
           Test History
         </Typography>
 
-        {/* Display Incomplete Tests First */}
+        {/* Display Incomplete Tests First (Tests to be given) */}
         {incompleteTests.length > 0 && (
           <>
             <Typography variant="h6" sx={{ color: '#004d4b', fontWeight: 'bold' }}>
@@ -90,10 +92,10 @@ const TestHistory = () => {
                         <Button
                           variant="contained"
                           color="primary"
-                          onClick={() => handleViewTest(test.id)}
-                          sx={{ width: '120px' }}
+                          onClick={() => handleTestAction(test.id, test.score)}
+                          sx={{ width: '140px' }}
                         >
-                          View Test
+                          Resume Test
                         </Button>
                       </Box>
                     </CardContent>
@@ -104,7 +106,7 @@ const TestHistory = () => {
           </>
         )}
 
-        {/* Display Completed Tests */}
+        {/* Display Completed Tests (Tests already given with scores) */}
         {completedTests.length > 0 && (
           <>
             <Typography variant="h6" sx={{ color: '#004d4b', fontWeight: 'bold', marginTop: 5 }}>
@@ -134,24 +136,14 @@ const TestHistory = () => {
                         {test.description}
                       </Typography>
 
-                      <Box sx={{ marginBottom: '16px' }}>
-                        <Typography sx={{ color: '#004d4b', fontWeight: 'bold' }}>
-                          Score: {test.score}%
-                        </Typography>
-                      </Box>
-
-                      <Typography sx={{ color: '#004d4b', marginBottom: '8px' }}>
-                        <strong>Source:</strong> {test.source}
-                      </Typography>
-
                       <Box sx={{ textAlign: 'right' }}>
                         <Button
                           variant="contained"
                           color="primary"
-                          onClick={() => handleViewTest(test.id)}
+                          onClick={() => handleTestAction(test.id, test.score)}
                           sx={{ width: '120px' }}
                         >
-                          View Test
+                          Start Test
                         </Button>
                       </Box>
                     </CardContent>
@@ -166,4 +158,4 @@ const TestHistory = () => {
   );
 };
 
-export default TestHistory;
+export default StartTest;
