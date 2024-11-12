@@ -10,6 +10,9 @@ import {
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import "react-responsive-carousel/lib/styles/carousel.min.css"; // Import carousel styles
 import CarouselSection from '../compontents/carousel'; // Import the CarouselSection component
+import { loginUser } from '../services/api'; // Import the signup API function
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css"; // Import Toastify styles
 
 const theme = createTheme({
   palette: {
@@ -60,13 +63,24 @@ const LoginPage = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  // Add async to handleSubmit
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validateForm(formData);
     setErrors(validationErrors);
     if (Object.keys(validationErrors).length === 0) {
-      // Form is valid, submit data here
-      console.log("Form submitted", formData);
+      try {
+        // If you are logging in, make sure to use the correct function like loginUser
+        const data = await loginUser(formData); // Or change to loginUser if needed
+
+        // If login is successful
+        toast.success("Login successful!", { position: "top-right" });
+        // Redirect to home or dashboard after success
+        // Example: navigate("/dashboard");
+      } catch (error) {
+        // Handle error response from the API
+        toast.error(error.message || "Something went wrong. Please try again.", { position: "top-right" });
+      }
     }
   };
 
@@ -94,11 +108,7 @@ const LoginPage = () => {
       </style>
 
       <Grid container sx={{ width: "100vw", height: "100vh" }}>
-        <Grid
-          item
-          xs={12}
-          md={6}
-        >
+        <Grid item xs={12} md={6}>
           <CarouselSection />
         </Grid>
 
@@ -126,12 +136,7 @@ const LoginPage = () => {
               borderColor: "primary.main",
             }}
           >
-            <Typography
-              variant="h4"
-              color="textPrimary"
-              align="center"
-              gutterBottom
-            >
+            <Typography variant="h4" color="textPrimary" align="center" gutterBottom>
               Log In
             </Typography>
             <form onSubmit={handleSubmit}>
@@ -184,6 +189,7 @@ const LoginPage = () => {
           </Box>
         </Grid>
       </Grid>
+        <ToastContainer />
     </ThemeProvider>
   );
 };
