@@ -21,7 +21,8 @@ from drf_spectacular.views import (SpectacularAPIView, SpectacularRedocView,
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('user_authentication.urls'))
+    path('', include('user_authentication.urls')),
+    path('', include('test_module.urls'))
 ]
 
 
