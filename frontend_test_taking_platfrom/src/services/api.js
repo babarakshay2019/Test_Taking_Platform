@@ -18,5 +18,14 @@ export const logoutUser = async (token) => {
   return response.data;
 };
 
+export const getAllTest = async (page) => {
+  const response = await axiosInstance.get(`${apiUrl.GETALLTEST}?page=${1}&page_size=${10}`);
+  return response.data;
+};
+
+export const getQuestionTest = async (page) => {
+  const response = await axiosInstance.get(`${apiUrl.GETALLTEST}?page=${1}&page_size=${10}`);
+  return response.data;
+};
 
 

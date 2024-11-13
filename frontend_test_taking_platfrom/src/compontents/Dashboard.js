@@ -44,10 +44,10 @@ const Dashboard = () => {
   };
 
   const handleLogout = async (e) => {
-    navigate('/login')
+    const refreshToken = localStorage.getItem("refresh_token");
     try {
       // If you are logging in, make sure to use the correct function like loginUser
-      const data = await logoutUser(); // Or change to loginUser if needed
+      const data = await logoutUser({ refresh: refreshToken });
 
       localStorage.clear();
       navigate('/login')

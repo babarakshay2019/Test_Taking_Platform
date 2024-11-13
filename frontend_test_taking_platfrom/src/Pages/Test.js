@@ -1,16 +1,17 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Typography, Button, Card, CardContent, Grid } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
+import { getAllTest } from '../services/api';
+import Loader from '../compontents/loader'; // Import the Loader component
 
-// Custom theme for the application
 const theme = createTheme({
   palette: {
     primary: {
-      main: "#004d4b", // Dark teal color
+      main: "#004d4b",
     },
     secondary: {
-      main: "#e9f9ed", // Light green color
+      main: "#e9f9ed",
     },
   },
   typography: {
@@ -18,44 +19,68 @@ const theme = createTheme({
   },
 });
 
-const StartTest= () => {
+const StartTest = () => {
   const navigate = useNavigate();
+  const [tests, setTests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [maxPage, setMaxPage] = useState(null);
+  const [isFetching, setIsFetching] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // New state for universal loader
 
-  // Sample test data with score
-  const tests = [
-    { id: 1, name: 'Math Test - 2024', description: 'Test on Algebra and Geometry', score: 85, source: 'Textbook' },
-    { id: 2, name: 'Physics Test - 2024', description: 'Test on Mechanics and Thermodynamics', score: 70, source: 'Online Course' },
-    { id: 3, name: 'Chemistry Test - 2024', description: 'Test on Organic Chemistry', score: null, source: 'Research Paper' }, // Incomplete test
-    { id: 4, name: 'Biology Test - 2024', description: 'Test on Genetics and Evolution', score: 90, source: 'Lecture Notes' },
-    { id: 5, name: 'History Test - 2024', description: 'Test on World War II', score: 60, source: 'History Book' },
-  ];
-
-  // Separate tests into completed and incomplete
-  const incompleteTests = tests.filter(test => test.score === null);
-  const completedTests = tests.filter(test => test.score !== null);
-
-  // Handle navigation to view test or start test
-  const handleTestAction = (testId, score) => {
-    if (score === null) {
-      navigate(`/${testId}`); // Navigate to the StartTest page with the test ID
+  const fetchTests = async (currentPage) => {
+    try {
+      setIsFetching(true);
+      setIsLoading(true);
+      const response = await getAllTest(currentPage);
+      setTests((prevTests) => [...prevTests, ...(Array.isArray(response?.results) ? response.results : [])]);
+      if (response?.maxPage) {
+        setMaxPage(response.maxPage);
+      }
+    } catch (error) {
+      console.error('Error fetching tests:', error);
+    } finally {
+      setLoading(false);
+      setIsFetching(false);
+      setIsLoading(false); // Hide the loader
     }
   };
 
+  useEffect(() => {
+    fetchTests(page);
+  }, [page]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 50 && !isFetching && page < maxPage) {
+        setPage((prevPage) => prevPage + 1);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isFetching, page, maxPage]);
+
+  const handleTestAction = (id, status) => {
+    navigate(`/view-test/${id}`, { state:  "startTest" });
+  };
+  
+  
+
   return (
     <ThemeProvider theme={theme}>
+      {isLoading && <Loader />} {/* Show the loader when isLoading is true */}
       <Box sx={{ padding: '16px', borderRadius: '12px' }}>
         <Typography variant="h5" sx={{ mb: 2, textAlign: 'center', color: '#004d4b', fontWeight: 'bold' }}>
           Test History
         </Typography>
 
-        {/* Display Incomplete Tests First (Tests to be given) */}
-        {incompleteTests.length > 0 && (
+        {loading ? (
+          <Typography sx={{ textAlign: 'center', color: '#004d4b' }}>Loading tests...</Typography>
+        ) : (
           <>
-            <Typography variant="h6" sx={{ color: '#004d4b', fontWeight: 'bold' }}>
-              Incomplete Tests
-            </Typography>
             <Grid container spacing={3}>
-              {incompleteTests.map((test) => (
+              {tests.map((test) => (
                 <Grid item xs={12} sm={6} key={test.id} mt={5}>
                   <Card
                     sx={{
@@ -72,65 +97,7 @@ const StartTest= () => {
                   >
                     <CardContent>
                       <Typography variant="h6" sx={{ color: '#004d4b', fontWeight: 'bold' }}>
-                        {test.name}
-                      </Typography>
-                      <Typography sx={{ color: '#004d4b', marginBottom: '16px' }}>
-                        {test.description}
-                      </Typography>
-
-                      <Box sx={{ marginBottom: '16px' }}>
-                        <Typography sx={{ color: '#004d4b', fontWeight: 'bold' }}>
-                          Status: Incomplete
-                        </Typography>
-                      </Box>
-
-                      <Typography sx={{ color: '#004d4b', marginBottom: '8px' }}>
-                        <strong>Source:</strong> {test.source}
-                      </Typography>
-
-                      <Box sx={{ textAlign: 'right' }}>
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          onClick={() => handleTestAction(test.id, test.score)}
-                          sx={{ width: '140px' }}
-                        >
-                          Resume Test
-                        </Button>
-                      </Box>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
-          </>
-        )}
-
-        {/* Display Completed Tests (Tests already given with scores) */}
-        {completedTests.length > 0 && (
-          <>
-            <Typography variant="h6" sx={{ color: '#004d4b', fontWeight: 'bold', marginTop: 5 }}>
-              Test List
-            </Typography>
-            <Grid container spacing={3}>
-              {completedTests.map((test) => (
-                <Grid item xs={12} sm={6} key={test.id} mt={5}>
-                  <Card
-                    sx={{
-                      padding: '16px',
-                      backgroundColor: '#ffffff',
-                      borderRadius: '16px',
-                      boxShadow: 3,
-                      width: '85%',
-                      transition: 'transform 0.2s ease',
-                      '&:hover': {
-                        transform: 'scale(1.05)',
-                      },
-                    }}
-                  >
-                    <CardContent>
-                      <Typography variant="h6" sx={{ color: '#004d4b', fontWeight: 'bold' }}>
-                        {test.name}
+                        {test.title}
                       </Typography>
                       <Typography sx={{ color: '#004d4b', marginBottom: '16px' }}>
                         {test.description}
@@ -140,7 +107,7 @@ const StartTest= () => {
                         <Button
                           variant="contained"
                           color="primary"
-                          onClick={() => handleTestAction(test.id, test.score)}
+                          onClick={() => handleTestAction(test.id)}
                           sx={{ width: '120px' }}
                         >
                           Start Test
@@ -151,6 +118,7 @@ const StartTest= () => {
                 </Grid>
               ))}
             </Grid>
+            {isFetching && <Typography sx={{ textAlign: 'center', color: '#004d4b' }}>Loading more tests...</Typography>}
           </>
         )}
       </Box>
