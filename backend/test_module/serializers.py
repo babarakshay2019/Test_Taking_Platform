@@ -73,7 +73,7 @@ class UserAnswerSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserAnswer
         fields = ['id', 'user_attempt', 'question', 'selected_option', 'created_at', 'updated_at', 'created_by', 'updated_by']
-
+        read_only_fields = ["user_attempt", "question" ]
 
 class UserQuizAttemptSerializer(serializers.ModelSerializer):
     """
@@ -87,3 +87,15 @@ class UserQuizAttemptSerializer(serializers.ModelSerializer):
         model = UserQuizAttempt
         fields = ['id', 'user', 'quiz', 'score', 'status', 'passed', 'created_at', 'updated_at', 'created_by', 'updated_by', 'answers']
         read_only_fields = ['user', 'quiz', 'score', 'status', 'passed']
+
+
+from rest_framework import serializers
+from .models import UserQuizAttempt
+
+class LeaderboardSerializer(serializers.ModelSerializer):
+    user_name = serializers.CharField(source='user.username')  # Fetch username directly
+    score = serializers.IntegerField()
+    
+    class Meta:
+        model = UserQuizAttempt
+        fields = ['user_name', 'score', 'created_at']
