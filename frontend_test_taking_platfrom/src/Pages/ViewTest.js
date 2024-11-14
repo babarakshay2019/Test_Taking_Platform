@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -12,7 +12,10 @@ import {
   TextField,
 } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
+import {useParams, useLocation } from "react-router-dom";
+import { getQuestionTest } from "../services/api";
+
 
 // Custom theme for the application
 const theme = createTheme({
@@ -31,6 +34,10 @@ const theme = createTheme({
 
 const ViewTest = () => {
   const navigate = useNavigate();
+  const { startTestId } = useParams();
+  const location = useLocation();
+  const status = location.state || {};
+  console.log(location.state)
   const test = {
     id: 1,
     test_subject: "Maths",
@@ -68,6 +75,25 @@ const ViewTest = () => {
   // State management for current question index, answers, and explanation visibility
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [showExplanation, setShowExplanation] = useState(false); // To toggle explanation visibility
+  const [loading, setLoading] = useState(false); // Loading state for API call
+
+  // Handle API call when status is "startTest"
+  const fetchTestDetails = async () => {
+    try {
+      const response = await getQuestionTest(startTestId);
+    } catch (error) {
+      console.error('Error fetching tests:', error);
+    }
+  };
+
+  // Fetch test details if status is "startTest"
+  useEffect(() => {
+    console.log("heyyy",status)
+    if (status === "startTest") {
+      console.log(status)
+      fetchTestDetails(); // Call API to start the test
+    }
+  }, [status]); // Dependency array ensures the effect runs when `status` changes
 
   const handleNext = () => {
     if (currentQuestionIndex < test.Question.length - 1) {
@@ -92,7 +118,7 @@ const ViewTest = () => {
   };
 
   const handleReturnToDashboard = () => {
-    navigate(`/dashboard`); 
+    navigate(`/dashboard`);
   };
 
   return (

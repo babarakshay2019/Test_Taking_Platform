@@ -1,9 +1,12 @@
 const API_BASE = '/api';
 
 const apiUrls = {
-  LOGIN: `${API_BASE}/token/`,
+  LOGIN: `login/`,
   REGISTER: `register/`,
-  LOGOUT:`logout/`
+  LOGOUT:`logout/`,
+  GETALLTEST:'/quizzes/',
+  STARTTEST:'/questions/'
+
   
 }
 

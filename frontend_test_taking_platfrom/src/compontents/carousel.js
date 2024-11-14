@@ -4,7 +4,7 @@ import { Carousel } from "react-responsive-carousel";
 import Carousel1 from "../Images/home-banner__illust.svg";
 import Carousel2 from "../Images/7402080.webp";
 import Carousel3 from "../Images/7402077.webp";
-import AssignmentTurnedInRoundedIcon from '@mui/icons-material/AssignmentTurnedInRounded';
+import DashboardIcon from "@mui/icons-material/Dashboard";
 
 const CarouselSection = () => {
   return (
@@ -34,7 +34,7 @@ const CarouselSection = () => {
           borderRadius: "10px",
         }}
       >
-        <AssignmentTurnedInRoundedIcon sx={{ marginRight: 1, fontSize: "3.5rem" }} />
+        <DashboardIcon sx={{ marginRight: 1, fontSize: "2rem" }} />
         <Typography variant="h6">Test Hub</Typography>
       </Box>
 

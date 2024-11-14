@@ -6,48 +6,27 @@ import {
   TextField,
   Typography,
   Divider,
+  IconButton,
+  InputAdornment,
 } from "@mui/material";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
-import "react-responsive-carousel/lib/styles/carousel.min.css"; // Import carousel styles
-import CarouselSection from '../compontents/carousel'; // Import the CarouselSection component
-import { loginUser } from '../services/api'; // Import the signup API function
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
+import { ThemeProvider } from "@mui/material/styles";
+import "react-responsive-carousel/lib/styles/carousel.min.css";
+import CarouselSection from "../compontents/carousel";
+import { loginUser } from "../services/api";
 import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; // Import Toastify styles
-
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: "#004d4b",
-    },
-    secondary: {
-      main: "#e9f9ed",
-    },
-  },
-  typography: {
-    fontFamily: "Arial, sans-serif",
-  },
-});
+import "react-toastify/dist/ReactToastify.css";
+import theme from "../themes"; // Import the theme
 
 const LoginPage = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    email: "",
+    username: "",
     password: "",
   });
-
-  const [errors, setErrors] = useState({
-    email: "",
-    password: "",
-  });
-
-  // Function to validate the form fields
-  const validateForm = (data) => {
-    const newErrors = {};
-    if (!data.email) newErrors.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(data.email)) newErrors.email = "Email is invalid";
-    if (!data.password) newErrors.password = "Password is required";
-    else if (data.password.length < 6) newErrors.password = "Password must be at least 6 characters";
-    return newErrors;
-  };
+  const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -55,58 +34,49 @@ const LoginPage = () => {
       ...formData,
       [name]: value,
     });
-
-    // Reset the error messages for that field when the user starts typing
-    setErrors((prevErrors) => ({
-      ...prevErrors,
-      [name]: "",
-    }));
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        [name]: "",
+      }));
+    }
   };
 
-  // Add async to handleSubmit
+  const handleTogglePassword = () => {
+    setShowPassword((prev) => !prev);
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.username.trim()) {
+      newErrors.username = "Username is required";
+    }
+    if (!formData.password.trim()) {
+      newErrors.password = "Password is required";
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const validationErrors = validateForm(formData);
-    setErrors(validationErrors);
-    if (Object.keys(validationErrors).length === 0) {
-      try {
-        // If you are logging in, make sure to use the correct function like loginUser
-        const data = await loginUser(formData); // Or change to loginUser if needed
-
-        // If login is successful
-        toast.success("Login successful!", { position: "top-right" });
-        // Redirect to home or dashboard after success
-        // Example: navigate("/dashboard");
-      } catch (error) {
-        // Handle error response from the API
-        toast.error(error.message || "Something went wrong. Please try again.", { position: "top-right" });
-      }
+    if (!validateForm()) {
+      return;
+    }
+    try {
+      const data = await loginUser(formData);
+      localStorage.setItem("access_token", data.access);
+      localStorage.setItem("refresh_token", data.refresh);
+      toast.success("Login successful!", { position: "top-right" });
+      navigate("/dashboard");
+    } catch (error) {
+      toast.error(error.message || "Something went wrong. Please try again.", { position: "top-right" });
     }
   };
 
   return (
     <ThemeProvider theme={theme}>
-      <style>
-        {`
-          .carousel .control-dots .dot {
-            width: 12px;
-            height: 12px;
-            background-color: #004d4b;
-            border-radius: 50%;
-            margin: 0 5px;
-            opacity: 0.6;
-            transition: opacity 0.3s ease;
-          }
-          .carousel .control-dots .dot.selected {
-            opacity: 1;
-            background-color: #004d4b;
-          }
-          .carousel .control-dots {
-            bottom: 10px;
-          }
-        `}
-      </style>
-
       <Grid container sx={{ width: "100vw", height: "100vh" }}>
         <Grid item xs={12} md={6}>
           <CarouselSection />
@@ -140,43 +110,68 @@ const LoginPage = () => {
               Log In
             </Typography>
             <form onSubmit={handleSubmit}>
+              <Typography variant="body1" color="textPrimary" sx={{ marginBottom: 1 }}>
+                Username
+              </Typography>
               <TextField
                 fullWidth
-                label="Email"
                 variant="outlined"
                 margin="dense"
-                type="email"
-                name="email"
-                value={formData.email}
+                name="username"
+                placeholder="Username"
+                value={formData.username}
                 onChange={handleChange}
-                error={Boolean(errors.email)}
-                helperText={errors.email}
+                error={!!errors.username}
+                helperText={errors.username}
+                sx={{
+                  backgroundColor: theme.palette.secondary.main, // Using theme colo,
+                  "& input:-webkit-autofill": {
+                    WebkitBoxShadow: `0 0 0 1000px ${theme.palette.secondary.main} inset`, // Using theme colo
+                  },
+                }}
               />
+              <Typography variant="body1" color="textPrimary" sx={{ marginTop: 2, marginBottom: 1 }}>
+                Password
+              </Typography>
               <TextField
                 fullWidth
-                label="Password"
                 variant="outlined"
                 margin="dense"
-                type="password"
+                placeholder="Password"
+                type={showPassword ? "text" : "password"}
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                error={Boolean(errors.password)}
+                error={!!errors.password}
                 helperText={errors.password}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={handleTogglePassword} edge="end">
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  backgroundColor: theme.palette.secondary.main, // Using theme colo,
+                  "& input:-webkit-autofill": {
+                    WebkitBoxShadow: `0 0 0 1000px ${theme.palette.secondary.main} inset`, // Using theme colo
+                  },
+                }}
               />
               <Button
                 fullWidth
                 variant="contained"
                 color="primary"
                 size="medium"
-                sx={{ marginY: 1 }}
+                sx={{ marginY: 2 }}
                 type="submit"
-                disabled={Object.keys(errors).length > 0 || !formData.email || !formData.password}
               >
                 Log In
               </Button>
             </form>
-            <Divider sx={{ marginY: 1 }}>or</Divider>
+            <Divider sx={{ marginY: 2 }}>or</Divider>
             <Typography variant="body2" align="center" color="textSecondary">
               Don't have an account?{" "}
               <a
@@ -189,7 +184,7 @@ const LoginPage = () => {
           </Box>
         </Grid>
       </Grid>
-        <ToastContainer />
+      <ToastContainer />
     </ThemeProvider>
   );
 };
