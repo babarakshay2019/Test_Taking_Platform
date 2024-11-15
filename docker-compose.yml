@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: django-backend
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./frontend_test_taking_platfrom
+      dockerfile: Dockerfile
+    container_name: react-frontend
+    stdin_open: true
+    volumes:
+      - ./frontend_test_taking_platfrom:/app
+    ports:
+      - "3000:3000"
+    command: ["npm", "start"]
+
+volumes:
+  postgres_data:
