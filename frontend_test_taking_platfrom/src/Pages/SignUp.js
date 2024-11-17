@@ -72,7 +72,7 @@ const SignUpPage = () => {
     e.preventDefault();
     const validationErrors = validateForm(formData);
     setErrors(validationErrors);
-
+    console.log("hello")
     if (Object.keys(validationErrors).length === 0) {
       try {
         await registerUser(formData);
