@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
+    'silk',
 ]
 
 MIDDLEWARE = [
@@ -60,6 +61,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'silk.middleware.SilkyMiddleware',
 ]
 
 ROOT_URLCONF = 'Test_Taking_Platform.urls'
@@ -164,3 +166,48 @@ SPECTACULAR_SETTINGS = {
         'persistAuthorization': True,  # Enable persistence of authorization settings
     },
 }
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {name} {message} [file:{filename}, line:{lineno}]',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'app': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}
+
+
+# Enable Silk's query profiling
+SILKY_PYTHON_PROFILER = True
+
+# Track database queries
+SILKY_INTERCEPTORS = (
+    'silk.middleware.interceptors.SqlQueryInterceptor',
+)
+
+# Enable or disable Silk's view profiling
+SILKY_ANALYZE_QUERIES = True  # Enable to track database queries
+
+# Set maximum number of records to keep
+SILKY_MAX_REQUESTS = 1000

@@ -57,6 +57,11 @@ class UserQuizAttempt(BaseModel):
     status = models.CharField(max_length=128, default="", choices=STATUSES)
     passed = models.BooleanField(default=False)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['id', 'status']),
+        ]
+
     def __str__(self):
         return f"{self.user.username} - {self.quiz.title} - Score: {self.score}"
 

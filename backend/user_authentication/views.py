@@ -1,15 +1,15 @@
+import logging
 from django.contrib.auth.models import User
 from rest_framework import generics, status, viewsets
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .serializers import RegisterSerializer, UserSerializer, LogoutSerializer
-import logging
 
-logger = logging.getLogger(__name__)
+# Use custom logger defined in settings.py
+logger = logging.getLogger('app')
 
 
 class RegisterView(generics.CreateAPIView):
@@ -18,10 +18,12 @@ class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
 
     def post(self, request):
+        logger.info("Register request received with data: %s", request.data)
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
             refresh = RefreshToken.for_user(user)
+            logger.info("User %s registered successfully.", user.username)
             return Response(
                 {
                     "refresh": str(refresh),
@@ -31,11 +33,16 @@ class RegisterView(generics.CreateAPIView):
                 },
                 status=status.HTTP_201_CREATED,
             )
+        logger.warning("Invalid registration request: %s", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        logger.info("Token obtain request received.")
+        return super().post(request, *args, **kwargs)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -48,38 +55,40 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     http_method_names = ["get", "patch", "delete"]
 
+    def list(self, request, *args, **kwargs):
+        logger.info("Fetching user list.")
+        return super().list(request, *args, **kwargs)
+
+    def partial_update(self, request, *args, **kwargs):
+        logger.info("Updating user with ID: %s", kwargs.get('pk'))
+        return super().partial_update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        logger.info("Deleting user with ID: %s", kwargs.get('pk'))
+        return super().destroy(request, *args, **kwargs)
+
 
 class LogoutView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = LogoutSerializer
 
     def post(self, request, *args, **kwargs):
-        # Log incoming request data
-        logger.debug(f"Incoming request data: {request.data}")
+        logger.info("Logout request initiated for user: %s", request.user.username)
 
-        # Deserialize and validate the input data
         serializer = self.get_serializer(data=request.data)
 
         if serializer.is_valid():
             try:
                 refresh_token = serializer.validated_data["refresh"]
-                # Log the refresh token for debugging
-                logger.debug(f"Refreshing token: {refresh_token}")
+                logger.debug("Processing refresh token: %s", refresh_token)
 
-                # Blacklist the refresh token
                 token = RefreshToken(refresh_token)
-                token.blacklist()  # Blacklist the refresh token
-                return Response(
-                    {"detail": "Logout successful"},
-                    status=status.HTTP_205_RESET_CONTENT,
-                )
+                token.blacklist()
+                logger.info("Logout successful for user: %s", request.user.username)
+                return Response({"detail": "Logout successful"}, status=status.HTTP_205_RESET_CONTENT)
             except Exception as e:
-                # Log the exception for debugging
-                logger.error(f"Error during logout: {str(e)}")
-                return Response(
-                    {"error": "Bad request"}, status=status.HTTP_400_BAD_REQUEST
-                )
+                logger.error("Error during logout for user %s: %s", request.user.username, str(e))
+                return Response({"error": "Bad request"}, status=status.HTTP_400_BAD_REQUEST)
         else:
-            # Log serializer errors for debugging
-            logger.error(f"Serializer errors: {serializer.errors}")
+            logger.warning("Invalid logout request for user %s: %s", request.user.username, serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

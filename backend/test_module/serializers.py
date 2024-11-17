@@ -27,7 +27,7 @@ class QuestionSerializer(BaseModelSerializer):
 
     class Meta:
         model = Question
-        fields = ['id', 'quiz', 'question_type', 'question_text', 'options', 'explanation', 'created_at', 'updated_at']
+        fields = ['id', 'quiz', 'question_type', 'question_text', 'options','answer','explanation', 'created_at', 'updated_at']
 
     def get_options_schema(self, question_type):
         """Define JSON schema based on question type."""
